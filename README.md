@@ -1,6 +1,6 @@
 # AI Coding Subscription Task-Value Benchmark
 
-[![AI Coding Subscription Task-Value Benchmark](charts/high_value_subscriptions_tasks_per_dollar.png)](charts/high_value_subscriptions_tasks_per_dollar.html)
+[![AI Coding Subscription Task-Value Benchmark](charts/high_value_subscriptions_tasks_per_dollar.png)](https://htmlpreview.github.io/?https://github.com/samuelscheit/ai-subscription-comparison/blob/main/charts/high_value_subscriptions_tasks_per_dollar.html)
 
 A quantitative framework comparing high-value AI coding subscriptions by **tasks completed per dollar per month**, rather than raw tokens or provider-selected API-equivalent retail value.
 
