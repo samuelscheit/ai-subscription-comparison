@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090a0c">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Crect width=%2232%22 height=%2232%22 rx=%228%22 fill=%22%23090a0c%22/%3E%3Cpath d=%22M7 23 13 13l5 6 7-10%22 fill=%22none%22 stroke=%22%235DE2C1%22 stroke-width=%223%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22/%3E%3C/svg%3E">
+  <meta property="og:title" content="AI coding subscriptions — tasks per $1">
+  <meta property="og:description" content="Estimated task capacity per dollar across high-value AI coding subscriptions.">
+  <meta property="og:type" content="article">
+  <meta property="og:image" content="high_value_subscriptions_tasks_per_dollar.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>AI coding subscriptions — tasks per $1</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090a0c;
+      --ink: #f5f7fa;
+      --muted: #a5acb9;
+      --subtle: #707887;
+      --grid: rgba(255,255,255,.085);
+      --grid-strong: rgba(255,255,255,.18);
+      --focus: #ffffff;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); }
+    body {
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      color: var(--ink);
+      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: geometricPrecision;
+    }
+
+    .page { width: min(100%, 1280px); }
+    .share-frame {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      aspect-ratio: 8 / 5;
+      background: var(--bg);
+    }
+
+    .chart-svg { display: block; width: 100%; height: 100%; }
+    .chart-svg text { font-family: inherit; font-variant-numeric: tabular-nums; }
+    .chart-svg .title { fill: var(--ink); font-size: 72px; font-weight: 700; letter-spacing: -.045em; }
+    .chart-svg .subtitle { fill: var(--muted); font-size: 27px; font-weight: 450; letter-spacing: -.01em; }
+    .chart-svg .axis-title { fill: var(--muted); font-size: 17px; font-weight: 600; letter-spacing: .055em; }
+    .chart-svg .tick { fill: var(--subtle); font-size: 16px; font-weight: 500; }
+    .chart-svg .line-label { fill: var(--ink); font-size: 16px; font-weight: 650; }
+    .chart-svg .line-plan { fill: var(--subtle); font-size: 14px; font-weight: 500; }
+    .chart-svg .axis-higher { fill: var(--subtle); font-size: 14px; font-style: italic; font-weight: 500; letter-spacing: .02em; }
+    .chart-svg .annotation-label { fill: var(--ink); font-size: 18px; font-weight: 700; }
+    .chart-svg .annotation-value { fill: var(--muted); font-size: 15px; font-weight: 500; }
+    .chart-svg .note { fill: var(--subtle); font-size: 13px; letter-spacing: .01em; }
+    .chart-svg .signature { fill: var(--subtle); font-size: 14px; font-weight: 650; letter-spacing: .02em; }
+
+    .ui-only {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .ui-only button {
+      appearance: none;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 999px;
+      background: rgba(255,255,255,.05);
+      color: var(--ink);
+      padding: 9px 14px;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .ui-only button:hover { background: rgba(255,255,255,.10); }
+    .ui-only button:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+    .tooltip {
+      position: absolute;
+      pointer-events: none;
+      z-index: 5;
+      min-width: 210px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 12px;
+      background: rgba(20,22,27,.94);
+      box-shadow: 0 16px 36px rgba(0,0,0,.32);
+      color: var(--ink);
+      opacity: 0;
+      transform: translate3d(0, 4px, 0);
+      transition: opacity 140ms ease, transform 140ms ease;
+    }
+    .tooltip[data-visible="true"] { opacity: 1; transform: translate3d(0, 0, 0); }
+    .tooltip .tip-name { font-size: 14px; font-weight: 650; }
+    .tooltip .tip-meta { margin-top: 3px; color: var(--muted); font-size: 13px; }
+
+    body.export-mode { padding: 0; }
+    body.export-mode .page { width: 4800px; }
+    body.export-mode .share-frame { width: 4800px; height: 3000px; aspect-ratio: auto; }
+    body.export-mode .ui-only, body.export-mode .tooltip { display: none !important; }
+
+    @media (max-width: 720px) {
+      body { padding: 0; }
+      .page { width: 100%; }
+      .ui-only { padding: 0 12px 12px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .tooltip { transition: none; } }
+    @media print {
+      body { padding: 0; }
+      .ui-only, .tooltip { display: none !important; }
+      .share-frame { width: 4800px; height: 3000px; }
+    }
+  </style>
+</head>
+<body>
+  <script>if (new URLSearchParams(window.location.search).has('export')) document.body.classList.add('export-mode');</script>
+  <main class="page">
+    <section class="share-frame" id="share-frame" aria-label="AI coding subscription benchmark chart">
+      <svg class="chart-svg" id="chart" viewBox="0 0 1600 1000" role="img" aria-labelledby="chart-title chart-desc" preserveAspectRatio="xMidYMid meet">
+        <title id="chart-title">Estimated tasks per dollar across AI coding subscriptions</title>
+        <desc id="chart-desc">Seven model curves compare estimated monthly tasks per one dollar of subscription fee against the Artificial Analysis Intelligence Index. The y-axis uses a logarithmic scale so the full range remains readable.</desc>
+      </svg>
+      <div class="tooltip" id="tooltip" role="tooltip" aria-hidden="true">
+        <div class="tip-name" id="tip-name"></div>
+        <div class="tip-meta" id="tip-meta"></div>
+      </div>
+    </section>
+    <div class="ui-only" aria-label="Chart actions">
+      <button type="button" id="download-png">Download PNG</button>
+    </div>
+  </main>
+
+  <script id="benchmark-data" type="application/json">
+[{"provider":"Anthropic (Claude)","plan":"Claude Max 20x","price_usd":200.0,"model":"claude-opus-5.5","model_name":"Claude Opus 5.5","effort":"med","variant_match":"Claude Opus 5.5 (medium with fallback)","api_value_measured":12425.97,"api_value_anchor":11726.0,"monthly_mtok":31538.0,"tier":"Tier 1: Frontier (Score ~51+)","intel_score":51.2435,"cost_per_task":1.336,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":9300.9,"tasks_per_dollar_measured":46.5,"effective_cost_per_task_measured":0.0215,"tasks_per_mo_anchor":8776.9,"tasks_per_dollar_anchor":43.88,"effective_cost_per_task_anchor":0.0228},{"provider":"Anthropic (Claude)","plan":"Claude Max 20x","price_usd":200.0,"model":"claude-opus-5.5","model_name":"Claude Opus 5.5","effort":"high","variant_match":"Claude Opus 5.5 (high with fallback)","api_value_measured":12425.97,"api_value_anchor":11726.0,"monthly_mtok":31538.0,"tier":"Tier 1: Frontier (Score ~51+)","intel_score":53.5832,"cost_per_task":1.8225,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":6818.1,"tasks_per_dollar_measured":34.09,"effective_cost_per_task_measured":0.0293,"tasks_per_mo_anchor":6434.0,"tasks_per_dollar_anchor":32.17,"effective_cost_per_task_anchor":0.0311},{"provider":"Anthropic (Claude)","plan":"Claude Max 20x","price_usd":200.0,"model":"claude-opus-5.5","model_name":"Claude Opus 5.5","effort":"xhigh","variant_match":"Claude Opus 5.5 (xhigh with fallback)","api_value_measured":12425.97,"api_value_anchor":11726.0,"monthly_mtok":31538.0,"tier":"Tier 1: Frontier (Score ~51+)","intel_score":55.9874,"cost_per_task":3.4591,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":3592.3,"tasks_per_dollar_measured":17.96,"effective_cost_per_task_measured":0.0557,"tasks_per_mo_anchor":3389.9,"tasks_per_dollar_anchor":16.95,"effective_cost_per_task_anchor":0.059},{"provider":"Anthropic (Claude)","plan":"Claude Max 20x","price_usd":200.0,"model":"claude-opus-5.5","model_name":"Claude Opus 5.5","effort":"max","variant_match":"Claude Opus 5.5 (max with fallback)","api_value_measured":12425.97,"api_value_anchor":11726.0,"monthly_mtok":31538.0,"tier":"Tier 1: Frontier (Score ~51+)","intel_score":57.6224,"cost_per_task":5.982,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":2077.2,"tasks_per_dollar_measured":10.39,"effective_cost_per_task_measured":0.0963,"tasks_per_mo_anchor":1960.2,"tasks_per_dollar_anchor":9.8,"effective_cost_per_task_anchor":0.102},{"provider":"Anthropic (Claude)","plan":"Claude Max 20x","price_usd":200.0,"model":"claude-sonnet-5.5","model_name":"Claude Sonnet 5.5","effort":"med","variant_match":"Claude Sonnet 5.5 (medium with fallback)","api_value_measured":11539.5,"api_value_anchor":11726.0,"monthly_mtok":39250.0,"tier":"Tier 3: High Efficiency (~40-44)","intel_score":40.7387,"cost_per_task":0.5862,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":19685.3,"tasks_per_dollar_measured":98.43,"effective_cost_per_task_measured":0.0102,"tasks_per_mo_anchor":20003.4,"tasks_per_dollar_anchor":100.02,"effective_cost_per_task_anchor":0.01},{"provider":"Anthropic (Claude)","plan":"Claude Max 20x","price_usd":200.0,"model":"claude-sonnet-5.5","model_name":"Claude Sonnet 5.5","effort":"high","variant_match":"Claude Sonnet 5.5 (high with fallback)","api_value_measured":11539.5,"api_value_anchor":11726.0,"monthly_mtok":39250.0,"tier":"Tier 2: High (Score ~45-48)","intel_score":46.7357,"cost_per_task":1.0798,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":10686.7,"tasks_per_dollar_measured":53.43,"effective_cost_per_task_measured":0.0187,"tasks_per_mo_anchor":10859.4,"tasks_per_dollar_anchor":54.3,"effective_cost_per_task_anchor":0.0184},{"provider":"Anthropic (Claude)","plan":"Claude Max 20x","price_usd":200.0,"model":"claude-sonnet-5.5","model_name":"Claude Sonnet 5.5","effort":"xhigh","variant_match":"Claude Sonnet 5.5 (xhigh with fallback)","api_value_measured":11539.5,"api_value_anchor":11726.0,"monthly_mtok":39250.0,"tier":"Tier 1: Frontier (Score ~51+)","intel_score":51.8523,"cost_per_task":2.7426,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":4207.5,"tasks_per_dollar_measured":21.04,"effective_cost_per_task_measured":0.0475,"tasks_per_mo_anchor":4275.5,"tasks_per_dollar_anchor":21.38,"effective_cost_per_task_anchor":0.0468},{"provider":"Anthropic (Claude)","plan":"Claude Max 20x","price_usd":200.0,"model":"claude-sonnet-5.5","model_name":"Claude Sonnet 5.5","effort":"max","variant_match":"Claude Sonnet 5.5 (max with fallback)","api_value_measured":11539.5,"api_value_anchor":11726.0,"monthly_mtok":39250.0,"tier":"Tier 1: Frontier (Score ~51+)","intel_score":55.978,"cost_per_task":7.6206,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":1514.3,"tasks_per_dollar_measured":7.57,"effective_cost_per_task_measured":0.1321,"tasks_per_mo_anchor":1538.7,"tasks_per_dollar_anchor":7.69,"effective_cost_per_task_anchor":0.13},{"provider":"Anthropic (Claude)","plan":"Claude Max 5x","price_usd":100.0,"model":"claude-opus-5.5","model_name":"Claude Opus 5.5","effort":"med","variant_match":"Claude Opus 5.5 (medium with fallback)","api_value_measured":6212.99,"api_value_anchor":5863.0,"monthly_mtok":15769.0,"tier":"Tier 1: Frontier (Score ~51+)","intel_score":51.2435,"cost_per_task":1.336,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":4650.4,"tasks_per_dollar_measured":46.5,"effective_cost_per_task_measured":0.0215,"tasks_per_mo_anchor":4388.5,"tasks_per_dollar_anchor":43.88,"effective_cost_per_task_anchor":0.0228},{"provider":"Anthropic (Claude)","plan":"Claude Max 5x","price_usd":100.0,"model":"claude-opus-5.5","model_name":"Claude Opus 5.5","effort":"xhigh","variant_match":"Claude Opus 5.5 (xhigh with fallback)","api_value_measured":6212.99,"api_value_anchor":5863.0,"monthly_mtok":15769.0,"tier":"Tier 1: Frontier (Score ~51+)","intel_score":55.9874,"cost_per_task":3.4591,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":1796.1,"tasks_per_dollar_measured":17.96,"effective_cost_per_task_measured":0.0557,"tasks_per_mo_anchor":1694.9,"tasks_per_dollar_anchor":16.95,"effective_cost_per_task_anchor":0.059},{"provider":"OpenAI (ChatGPT)","plan":"ChatGPT Pro 20x","price_usd":200.0,"model":"gpt-6.1-sol","model_name":"GPT-6.1 Sol","effort":"med","variant_match":"GPT-6.1 Sol (medium)","api_value_measured":3427.7,"api_value_anchor":2084.0,"monthly_mtok":17400.0,"tier":"Tier 2: High (Score ~45-48)","intel_score":47.7833,"cost_per_task":0.2137,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":16039.8,"tasks_per_dollar_measured":80.2,"effective_cost_per_task_measured":0.0125,"tasks_per_mo_anchor":9752.0,"tasks_per_dollar_anchor":48.76,"effective_cost_per_task_anchor":0.0205},{"provider":"OpenAI (ChatGPT)","plan":"ChatGPT Pro 20x","price_usd":200.0,"model":"gpt-6.1-sol","model_name":"GPT-6.1 Sol","effort":"high","variant_match":"GPT-6.1 Sol (high)","api_value_measured":3427.7,"api_value_anchor":2084.0,"monthly_mtok":17400.0,"tier":"Tier 1: Frontier (Score ~51+)","intel_score":50.2378,"cost_per_task":0.3191,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":10741.8,"tasks_per_dollar_measured":53.71,"effective_cost_per_task_measured":0.0186,"tasks_per_mo_anchor":6530.9,"tasks_per_dollar_anchor":32.65,"effective_cost_per_task_anchor":0.0306},{"provider":"OpenAI (ChatGPT)","plan":"ChatGPT Pro 20x","price_usd":200.0,"model":"gpt-6.1-sol","model_name":"GPT-6.1 Sol","effort":"xhigh","variant_match":"GPT-6.1 Sol (xhigh)","api_value_measured":3427.7,"api_value_anchor":2084.0,"monthly_mtok":17400.0,"tier":"Tier 1: Frontier (Score ~51+)","intel_score":51.0378,"cost_per_task":0.3929,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":8724.1,"tasks_per_dollar_measured":43.62,"effective_cost_per_task_measured":0.0229,"tasks_per_mo_anchor":5304.1,"tasks_per_dollar_anchor":26.52,"effective_cost_per_task_anchor":0.0377},{"provider":"OpenAI (ChatGPT)","plan":"ChatGPT Pro 20x","price_usd":200.0,"model":"gpt-6.1-sol","model_name":"GPT-6.1 Sol","effort":"max","variant_match":"GPT-6.1 Sol (max)","api_value_measured":3427.7,"api_value_anchor":2084.0,"monthly_mtok":17400.0,"tier":"Tier 1: Frontier (Score ~51+)","intel_score":51.8333,"cost_per_task":0.7242,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":4733.1,"tasks_per_dollar_measured":23.67,"effective_cost_per_task_measured":0.0423,"tasks_per_mo_anchor":2877.7,"tasks_per_dollar_anchor":14.39,"effective_cost_per_task_anchor":0.0695},{"provider":"OpenAI (ChatGPT)","plan":"ChatGPT Pro 20x","price_usd":200.0,"model":"gpt-6-astra","model_name":"GPT-6 Astra","effort":"med","variant_match":"GPT-6 Astra (medium)","api_value_measured":7586.38,"api_value_anchor":2084.0,"monthly_mtok":3812.0,"tier":"Tier 2: High (Score ~45-48)","intel_score":49.5704,"cost_per_task":1.5406,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":4924.3,"tasks_per_dollar_measured":24.62,"effective_cost_per_task_measured":0.0406,"tasks_per_mo_anchor":1352.7,"tasks_per_dollar_anchor":6.76,"effective_cost_per_task_anchor":0.1479},{"provider":"OpenAI (ChatGPT)","plan":"ChatGPT Pro 20x","price_usd":200.0,"model":"gpt-6-astra","model_name":"GPT-6 Astra","effort":"high","variant_match":"GPT-6 Astra (high)","api_value_measured":7586.38,"api_value_anchor":2084.0,"monthly_mtok":3812.0,"tier":"Tier 1: Frontier (Score ~51+)","intel_score":50.9191,"cost_per_task":1.7253,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":4397.1,"tasks_per_dollar_measured":21.99,"effective_cost_per_task_measured":0.0455,"tasks_per_mo_anchor":1207.9,"tasks_per_dollar_anchor":6.04,"effective_cost_per_task_anchor":0.1656},{"provider":"OpenAI (ChatGPT)","plan":"ChatGPT Pro 20x","price_usd":200.0,"model":"gpt-6-astra","model_name":"GPT-6 Astra","effort":"xhigh","variant_match":"GPT-6 Astra (xhigh)","api_value_measured":7586.38,"api_value_anchor":2084.0,"monthly_mtok":3812.0,"tier":"Tier 1: Frontier (Score ~51+)","intel_score":52.3863,"cost_per_task":2.3088,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":3285.9,"tasks_per_dollar_measured":16.43,"effective_cost_per_task_measured":0.0609,"tasks_per_mo_anchor":902.6,"tasks_per_dollar_anchor":4.51,"effective_cost_per_task_anchor":0.2216},{"provider":"OpenAI (ChatGPT)","plan":"ChatGPT Pro 20x","price_usd":200.0,"model":"gpt-6-astra","model_name":"GPT-6 Astra","effort":"max","variant_match":"GPT-6 Astra (max)","api_value_measured":7586.38,"api_value_anchor":2084.0,"monthly_mtok":3812.0,"tier":"Tier 1: Frontier (Score ~51+)","intel_score":52.6737,"cost_per_task":3.2575,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":2328.9,"tasks_per_dollar_measured":11.64,"effective_cost_per_task_measured":0.0859,"tasks_per_mo_anchor":639.8,"tasks_per_dollar_anchor":3.2,"effective_cost_per_task_anchor":0.3126},{"provider":"OpenAI (ChatGPT)","plan":"ChatGPT Plus","price_usd":20.0,"model":"gpt-6-luna","model_name":"GPT-6 Luna","effort":"med","variant_match":"GPT-6 Luna (medium)","api_value_measured":135.28,"api_value_anchor":135.28,"monthly_mtok":9203.0,"tier":"Tier 4: Mid (Score ~29-33)","intel_score":29.462,"cost_per_task":0.0176,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":7686.4,"tasks_per_dollar_measured":384.32,"effective_cost_per_task_measured":0.0026,"tasks_per_mo_anchor":7686.4,"tasks_per_dollar_anchor":384.32,"effective_cost_per_task_anchor":0.0026},{"provider":"OpenAI (ChatGPT)","plan":"ChatGPT Plus","price_usd":20.0,"model":"gpt-6-luna","model_name":"GPT-6 Luna","effort":"high","variant_match":"GPT-6 Luna (high)","api_value_measured":135.28,"api_value_anchor":135.28,"monthly_mtok":9203.0,"tier":"Tier 4: Mid (Score ~29-33)","intel_score":32.1482,"cost_per_task":0.0291,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":4648.8,"tasks_per_dollar_measured":232.44,"effective_cost_per_task_measured":0.0043,"tasks_per_mo_anchor":4648.8,"tasks_per_dollar_anchor":232.44,"effective_cost_per_task_anchor":0.0043},{"provider":"OpenAI (ChatGPT)","plan":"ChatGPT Plus","price_usd":20.0,"model":"gpt-6-luna","model_name":"GPT-6 Luna","effort":"xhigh","variant_match":"GPT-6 Luna (xhigh)","api_value_measured":135.28,"api_value_anchor":135.28,"monthly_mtok":9203.0,"tier":"Tier 4: Mid (Score ~29-33)","intel_score":33.8846,"cost_per_task":0.0421,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":3213.3,"tasks_per_dollar_measured":160.67,"effective_cost_per_task_measured":0.0062,"tasks_per_mo_anchor":3213.3,"tasks_per_dollar_anchor":160.67,"effective_cost_per_task_anchor":0.0062},{"provider":"OpenAI (ChatGPT)","plan":"ChatGPT Plus","price_usd":20.0,"model":"gpt-6-luna","model_name":"GPT-6 Luna","effort":"max","variant_match":"GPT-6 Luna (max)","api_value_measured":135.28,"api_value_anchor":135.28,"monthly_mtok":9203.0,"tier":"Tier 4: Mid (Score ~29-33)","intel_score":37.256,"cost_per_task":0.0679,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":1992.3,"tasks_per_dollar_measured":99.62,"effective_cost_per_task_measured":0.01,"tasks_per_mo_anchor":1992.3,"tasks_per_dollar_anchor":99.62,"effective_cost_per_task_anchor":0.01},{"provider":"Anthropic (Claude)","plan":"Claude Max 5x","price_usd":100.0,"model":"claude-haiku-4.5","model_name":"Claude Haiku 4.5","effort":"med","variant_match":"Claude Haiku 4.5 (reasoning)","api_value_measured":511.28,"api_value_anchor":511.28,"monthly_mtok":null,"tier":"Tier 5: Efficient (Score ~17)","intel_score":17.0,"cost_per_task":0.28,"evidence_kind":"third_party_workload_extrapolation","source_url":"https://electricitybench.com/models/claude-code-claude-haiku-4-5/","model_metrics_source":"https://artificialanalysis.ai/models/claude-4-5-haiku-reasoning","source_note":"Electricity Bench Max 5x medium-effort suite estimate; 1,826 runs/month.","tasks_per_mo_measured":1826.0,"tasks_per_dollar_measured":18.26,"effective_cost_per_task_measured":0.0548,"tasks_per_mo_anchor":1826.0,"tasks_per_dollar_anchor":18.26,"effective_cost_per_task_anchor":0.0548},{"provider":"Anthropic (Claude)","plan":"Claude Max 20x","price_usd":200.0,"model":"claude-haiku-4.5","model_name":"Claude Haiku 4.5","effort":"med","variant_match":"Claude Haiku 4.5 (reasoning)","api_value_measured":2045.12,"api_value_anchor":2045.12,"monthly_mtok":null,"tier":"Tier 5: Efficient (Score ~17)","intel_score":17.0,"cost_per_task":0.28,"evidence_kind":"third_party_workload_extrapolation","source_url":"https://electricitybench.com/models/claude-code-claude-haiku-4-5/","model_metrics_source":"https://artificialanalysis.ai/models/claude-4-5-haiku-reasoning","source_note":"Max 5x 1,826 runs/month × 4.0 plan-capacity extrapolation; price doubles from $100 to $200.","tasks_per_mo_measured":7304.0,"tasks_per_dollar_measured":36.52,"effective_cost_per_task_measured":0.0274,"tasks_per_mo_anchor":7304.0,"tasks_per_dollar_anchor":36.52,"effective_cost_per_task_anchor":0.0274},{"provider":"OpenAI (ChatGPT)","plan":"ChatGPT Pro 5x","price_usd":100.0,"model":"gpt-6.1-sol","model_name":"GPT-6.1 Sol","effort":"xhigh","variant_match":"GPT-6.1 Sol (xhigh)","api_value_measured":856.93,"api_value_anchor":521.0,"monthly_mtok":4350.0,"tier":"Tier 1: Frontier (Score ~51+)","intel_score":51.0378,"cost_per_task":0.3929,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":2181.0,"tasks_per_dollar_measured":21.81,"effective_cost_per_task_measured":0.0459,"tasks_per_mo_anchor":1326.0,"tasks_per_dollar_anchor":13.26,"effective_cost_per_task_anchor":0.0754},{"provider":"Grok (xAI)","plan":"SuperGrok Heavy","price_usd":300.0,"model":"grok-4.7","model_name":"Grok 4.7","effort":"high","variant_match":"Grok 4.7 (high)","api_value_measured":3231.8,"api_value_anchor":3231.8,"monthly_mtok":5720.0,"tier":"Tier 2: High (Score ~45-48)","intel_score":46.3322,"cost_per_task":2.7261,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":1185.5,"tasks_per_dollar_measured":3.95,"effective_cost_per_task_measured":0.2531,"tasks_per_mo_anchor":1185.5,"tasks_per_dollar_anchor":3.95,"effective_cost_per_task_anchor":0.2531},{"provider":"Grok (xAI)","plan":"SuperGrok Heavy","price_usd":300.0,"model":"grok-4.7","model_name":"Grok 4.7","effort":"xhigh","variant_match":"Grok 4.7 (xhigh)","api_value_measured":3231.8,"api_value_anchor":3231.8,"monthly_mtok":5720.0,"tier":"Tier 2: High (Score ~45-48)","intel_score":46.4466,"cost_per_task":3.7383,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":864.5,"tasks_per_dollar_measured":2.88,"effective_cost_per_task_measured":0.347,"tasks_per_mo_anchor":864.5,"tasks_per_dollar_anchor":2.88,"effective_cost_per_task_anchor":0.347},{"provider":"Grok (xAI)","plan":"SuperGrok Heavy","price_usd":300.0,"model":"grok-4.6","model_name":"Grok 4.6","effort":"med","variant_match":"Grok 4.6 (medium)","api_value_measured":2915.4,"api_value_anchor":2915.4,"monthly_mtok":5160.0,"tier":"Tier 3: High Efficiency (~40-44)","intel_score":42.8363,"cost_per_task":1.4963,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":1948.4,"tasks_per_dollar_measured":6.49,"effective_cost_per_task_measured":0.154,"tasks_per_mo_anchor":1948.4,"tasks_per_dollar_anchor":6.49,"effective_cost_per_task_anchor":0.154},{"provider":"Grok (xAI)","plan":"SuperGrok Heavy","price_usd":300.0,"model":"grok-4.6","model_name":"Grok 4.6","effort":"high","variant_match":"Grok 4.6 (high)","api_value_measured":2915.4,"api_value_anchor":2915.4,"monthly_mtok":5160.0,"tier":"Tier 3: High Efficiency (~40-44)","intel_score":44.3113,"cost_per_task":1.8589,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":1568.3,"tasks_per_dollar_measured":5.23,"effective_cost_per_task_measured":0.1913,"tasks_per_mo_anchor":1568.3,"tasks_per_dollar_anchor":5.23,"effective_cost_per_task_anchor":0.1913},{"provider":"Grok (xAI)","plan":"SuperGrok Heavy","price_usd":300.0,"model":"grok-4.6","model_name":"Grok 4.6","effort":"xhigh","variant_match":"Grok 4.6 (xhigh)","api_value_measured":2915.4,"api_value_anchor":2915.4,"monthly_mtok":5160.0,"tier":"Tier 3: High Efficiency (~40-44)","intel_score":44.1998,"cost_per_task":2.3237,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":1254.6,"tasks_per_dollar_measured":4.18,"effective_cost_per_task_measured":0.2391,"tasks_per_mo_anchor":1254.6,"tasks_per_dollar_anchor":4.18,"effective_cost_per_task_anchor":0.2391},{"provider":"Grok (xAI)","plan":"SuperGrok Plus","price_usd":100.0,"model":"grok-4.7","model_name":"Grok 4.7","effort":"high","variant_match":"Grok 4.7 (high)","api_value_measured":1293.85,"api_value_anchor":1293.85,"monthly_mtok":2290.0,"tier":"Tier 2: High (Score ~45-48)","intel_score":46.3322,"cost_per_task":2.7261,"evidence_kind":null,"source_url":null,"model_metrics_source":null,"source_note":null,"tasks_per_mo_measured":474.6,"tasks_per_dollar_measured":4.75,"effective_cost_per_task_measured":0.2107,"tasks_per_mo_anchor":474.6,"tasks_per_dollar_anchor":4.75,"effective_cost_per_task_anchor":0.2107}]
+  </script>
+
+  <script>
+    const DATA = JSON.parse(document.getElementById('benchmark-data').textContent);
+    const NS = 'http://www.w3.org/2000/svg';
+    const VIEW = { width: 1600, height: 1000 };
+    const plot = { left: 128, top: 275, right: 1450, bottom: 780 };
+    const plotWidth = plot.right - plot.left;
+    const plotHeight = plot.bottom - plot.top;
+    const COLORS = {
+      opus: '#F6C86E',
+      sonnet: '#F2A65A',
+      sol: '#5DE2C1',
+      astra: '#2EB7A7',
+      grok47: '#76A8FF',
+      grok46: '#9D8CFF',
+      luna: '#FF7AB6'
+    };
+    const MODEL_ORDER = [
+      { model: 'claude-opus-5.5', color: COLORS.opus, label: 'Claude Opus 5.5' },
+      { model: 'claude-sonnet-5.5', color: COLORS.sonnet, label: 'Claude Sonnet 5.5' },
+      { model: 'gpt-6.1-sol', color: COLORS.sol, label: 'GPT-6.1 Sol' },
+      { model: 'gpt-6-astra', color: COLORS.astra, label: 'GPT-6 Astra' },
+      { model: 'grok-4.7', color: COLORS.grok47, label: 'Grok 4.7' },
+      { model: 'grok-4.6', color: COLORS.grok46, label: 'Grok 4.6' },
+      { model: 'gpt-6-luna', color: COLORS.luna, label: 'GPT-6 Luna' }
+    ];
+    const SERIES_PLAN = {
+      'claude-opus-5.5': 'Claude Max 20x',
+      'claude-sonnet-5.5': 'Claude Max 20x',
+      'gpt-6.1-sol': 'ChatGPT Pro 20x',
+      'gpt-6-astra': 'ChatGPT Pro 20x',
+      'grok-4.7': 'SuperGrok Heavy',
+      'grok-4.6': 'SuperGrok Heavy',
+      'gpt-6-luna': 'ChatGPT Plus'
+    };
+    const EFFORT_LABELS = { med: 'medium', high: 'high', xhigh: 'x-high', max: 'max' };
+    const effortOrder = { med: 0, high: 1, xhigh: 2, max: 3 };
+    const svg = document.getElementById('chart');
+    const frame = document.getElementById('share-frame');
+    const tooltip = document.getElementById('tooltip');
+    const tipName = document.getElementById('tip-name');
+    const tipMeta = document.getElementById('tip-meta');
+
+    const plotted = DATA.filter((row) => SERIES_PLAN[row.model] === row.plan);
+    const numeric = (key) => plotted.map((d) => Number(d[key])).filter(Number.isFinite);
+    const extent = (values) => [Math.min(...values), Math.max(...values)];
+    const [xMin, xMaxRaw] = extent(numeric('intel_score'));
+    const [yMinRaw, yMaxRaw] = extent(numeric('tasks_per_dollar_measured'));
+    const xDomain = [Math.floor(xMin - 1), Math.ceil(xMaxRaw + 1)];
+    // Luna's direct ChatGPT Plus measurement is much higher than the flagship
+    // rows. A logarithmic y-axis keeps all seven evidence-backed curves legible
+    // without hiding the lower-value plans at the baseline.
+    const yDomain = [1, Math.ceil(yMaxRaw * 1.25 / 50) * 50];
+    const xScale = (value) => plot.left + ((value - xDomain[0]) / (xDomain[1] - xDomain[0])) * plotWidth;
+    const yScale = (value) => plot.bottom - ((Math.log(value) - Math.log(yDomain[0])) / (Math.log(yDomain[1]) - Math.log(yDomain[0]))) * plotHeight;
+    const fmt = (value) => Number(value).toFixed(1);
+    const compactPlan = (plan) => plan
+      .replace('Claude Max ', 'Max ')
+      .replace('ChatGPT Pro ', 'Pro ')
+      .replace('SuperGrok ', 'Grok ');
+
+    const grouped = new Map();
+    plotted.forEach((row) => {
+      if (!grouped.has(row.model)) grouped.set(row.model, []);
+      grouped.get(row.model).push(row);
+    });
+    grouped.forEach((rows) => rows.sort((a, b) => effortOrder[a.effort] - effortOrder[b.effort]));
+
+    const el = (tag, attrs = {}, textContent = '') => {
+      const node = document.createElementNS(NS, tag);
+      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, value));
+      if (textContent) node.textContent = textContent;
+      return node;
+    };
+    const add = (node) => svg.appendChild(node);
+    const line = (x1, y1, x2, y2, stroke, width = 1, opacity = 1, dash = '') => add(el('line', { x1, y1, x2, y2, stroke, 'stroke-width': width, opacity, 'stroke-dasharray': dash }));
+    const text = (x, y, value, className, attrs = {}) => add(el('text', { x, y, class: className, ...attrs }, value));
+
+    add(el('rect', { x: 0, y: 0, width: VIEW.width, height: VIEW.height, fill: 'transparent' }));
+    text(128, 92, 'Tasks per $1', 'title');
+    text(128, 132, 'AI coding subscriptions · estimated monthly task capacity', 'subtitle');
+    text(1450, 56, 'SELECTED PLANS', 'axis-title', { 'text-anchor': 'end' });
+    text(1450, 82, 'snapshot · 05 Oct 2026', 'note', { 'text-anchor': 'end' });
+    add(el('rect', { x: plot.left, y: plot.top, width: plotWidth, height: plotHeight, fill: 'rgba(255,255,255,.018)', stroke: 'rgba(255,255,255,.12)', 'stroke-width': 1, 'data-chart-frame': 'true' }));
+
+    const xTicks = [30, 35, 40, 45, 50, 55, 60].filter((tick) => tick >= xDomain[0] && tick <= xDomain[1]);
+    const yTicks = [1, 3, 10, 30, 100, 300].filter((tick) => tick >= yDomain[0] && tick <= yDomain[1]);
+    yTicks.forEach((tick) => {
+      const y = yScale(tick);
+      line(plot.left, y, plot.right, y, tick === 1 ? 'rgba(255,255,255,.18)' : 'rgba(255,255,255,.085)', tick === 1 ? 1.4 : 1);
+      text(plot.left - 18, y + 6, String(tick), 'tick', { 'text-anchor': 'end' });
+    });
+    xTicks.forEach((tick) => {
+      const x = xScale(tick);
+      line(x, plot.top, x, plot.bottom, 'rgba(255,255,255,.07)', 1, 1, '4 8');
+      text(x, plot.bottom + 34, String(tick), 'tick', { 'text-anchor': 'middle' });
+    });
+    text((plot.left + plot.right) / 2, plot.bottom + 76, 'Artificial Analysis Intelligence Index', 'axis-title', { 'text-anchor': 'middle' });
+    text((plot.left + plot.right) / 2, plot.bottom + 100, '(higher is better)', 'axis-higher', { 'text-anchor': 'middle' });
+    text(42, (plot.top + plot.bottom) / 2 - 26, 'ESTIMATED TASKS / $1 / MONTH · LOG SCALE', 'axis-title', { 'text-anchor': 'middle', transform: `rotate(-90 42 ${(plot.top + plot.bottom) / 2 - 26})` });
+    text(66, (plot.top + plot.bottom) / 2 + 12, '(higher is better)', 'axis-higher', { 'text-anchor': 'middle', transform: `rotate(-90 66 ${(plot.top + plot.bottom) / 2 + 12})` });
+
+    const seriesNodes = new Map();
+    MODEL_ORDER.forEach((config) => {
+      const rows = grouped.get(config.model) || [];
+      if (!rows.length) return;
+      const g = el('g', { 'data-series': config.model });
+      const points = rows.map((row) => ({ row, x: xScale(row.intel_score), y: yScale(row.tasks_per_dollar_measured) }));
+      g.appendChild(el('path', {
+        d: points.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`).join(' '),
+        fill: 'none', stroke: config.color, 'stroke-width': 5.5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: .94
+      }));
+      points.forEach(({ row, x, y }) => {
+        const marker = el('circle', {
+          cx: x, cy: y, r: 8, fill: config.color, stroke: '#090a0c', 'stroke-width': 3,
+          tabindex: 0,
+          'aria-label': `${config.label}, ${EFFORT_LABELS[row.effort]} reasoning: ${fmt(row.tasks_per_dollar_measured)} estimated tasks per dollar`,
+          'data-tooltip': `${config.label} · ${EFFORT_LABELS[row.effort]} · ${fmt(row.tasks_per_dollar_measured)} tasks/$`
+        });
+        const show = () => showTooltip(config, row, x, y);
+        marker.addEventListener('mouseenter', show);
+        marker.addEventListener('focus', show);
+        marker.addEventListener('mouseleave', hideTooltip);
+        marker.addEventListener('blur', hideTooltip);
+        g.appendChild(marker);
+      });
+      const last = points[points.length - 1];
+      const lastRow = rows[rows.length - 1];
+      const labelOffsets = {
+        'claude-opus-5.5': { dx: 18, dy: -18 },
+        'claude-sonnet-5.5': { dx: 18, dy: 26 },
+        'gpt-6.1-sol': { dx: 18, dy: -18 },
+        'gpt-6-astra': { dx: 18, dy: 26 },
+        'grok-4.7': { dx: 18, dy: -18 },
+        'grok-4.6': { dx: 18, dy: 26 },
+        'gpt-6-luna': { dx: 18, dy: -18 }
+      };
+      const offset = labelOffsets[config.model];
+      const label = el('text', { x: last.x + offset.dx, y: last.y + offset.dy, class: 'line-label', 'text-anchor': 'start' });
+      label.appendChild(el('tspan', { x: last.x + offset.dx, dy: 0, fill: config.color, 'font-weight': 700 }, config.label));
+      label.appendChild(el('tspan', { x: last.x + offset.dx, dy: 19, class: 'line-plan' }, compactPlan(lastRow.plan)));
+      g.appendChild(label);
+      add(g);
+      seriesNodes.set(config.model, g);
+    });
+
+    text(128, 936, 'Sources: real-api-pricing · Artificial Analysis Intelligence Index v4.3', 'note');
+    text(1450, 960, 'by @samuelscheit', 'signature', { 'text-anchor': 'end' });
+    text(128, 960, 'Formula: monthly API-value allowance ÷ (benchmark cost per task × subscription fee)', 'note');
+
+    function showTooltip(config, row, x, y) {
+      tipName.textContent = config.label;
+      tipMeta.textContent = `${EFFORT_LABELS[row.effort]} · ${fmt(row.tasks_per_dollar_measured)} estimated tasks / $1`;
+      const frameRect = frame.getBoundingClientRect();
+      const scale = frameRect.width / VIEW.width;
+      const left = Math.min(Math.max(x * scale + 18, 14), frameRect.width - 230);
+      const top = Math.min(Math.max(y * scale - 12, 14), frameRect.height - 82);
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
+      tooltip.dataset.visible = 'true';
+      tooltip.setAttribute('aria-hidden', 'false');
+    }
+    function hideTooltip() {
+      tooltip.dataset.visible = 'false';
+      tooltip.setAttribute('aria-hidden', 'true');
+    }
+
+    function downloadPng() {
+      const clone = svg.cloneNode(true);
+      const computed = getComputedStyle(document.documentElement);
+      const style = document.createElementNS(NS, 'style');
+      style.textContent = `
+        text { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", sans-serif; font-variant-numeric: tabular-nums; }
+        .title { fill: ${computed.getPropertyValue('--ink').trim()}; font-size: 72px; font-weight: 700; letter-spacing: -.045em; }
+        .subtitle { fill: ${computed.getPropertyValue('--muted').trim()}; font-size: 27px; font-weight: 450; }
+        .axis-title { fill: ${computed.getPropertyValue('--muted').trim()}; font-size: 17px; font-weight: 600; letter-spacing: .055em; }
+        .tick { fill: ${computed.getPropertyValue('--subtle').trim()}; font-size: 16px; font-weight: 500; }
+        .line-label { fill: ${computed.getPropertyValue('--ink').trim()}; font-size: 16px; font-weight: 650; }
+        .line-plan, .note { fill: ${computed.getPropertyValue('--subtle').trim()}; font-size: 14px; font-weight: 500; }
+        .axis-higher { fill: ${computed.getPropertyValue('--subtle').trim()}; font-size: 14px; font-style: italic; font-weight: 500; }
+        .annotation-label { fill: ${computed.getPropertyValue('--ink').trim()}; font-size: 18px; font-weight: 700; }
+        .annotation-value { fill: ${computed.getPropertyValue('--muted').trim()}; font-size: 15px; font-weight: 500; }
+        .signature { fill: ${computed.getPropertyValue('--subtle').trim()}; font-size: 14px; font-weight: 650; }
+      `;
+      clone.insertBefore(style, clone.firstChild);
+      const source = new XMLSerializer().serializeToString(clone);
+      const svgBlob = new Blob([`<?xml version="1.0" encoding="UTF-8"?>${source}`], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      const image = new Image();
+      image.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = 4800;
+        canvas.height = 3000;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = computed.getPropertyValue('--bg').trim();
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        canvas.toBlob((blob) => {
+          const link = document.createElement('a');
+          link.download = 'high_value_subscriptions_tasks_per_dollar.png';
+          link.href = URL.createObjectURL(blob);
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+        }, 'image/png');
+      };
+      image.src = url;
+    }
+
+    document.getElementById('download-png').addEventListener('click', downloadPng);
+  </script>
+</body>
+</html>

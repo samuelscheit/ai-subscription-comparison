@@ -1,0 +1,13 @@
+{
+  "sourceRepository": "https://github.com/FeiZhuLulu/real-api-pricing",
+  "sourceCommit": "dce850df080582f2926a3376f97a2edf6020a508",
+  "capturedAt": "2026-10-05",
+  "localDataDirectories": [
+    "data/",
+    "derived/"
+  ],
+  "notes": [
+    "The benchmark runner reads all source data from this repository; it does not require /tmp/real-api-pricing or network access.",
+    "The chart filters to high-value flagship subscriptions and excludes low reasoning levels, OpenCode/Command Code wrappers, and Muse/Meta plans."
+  ]
+}
